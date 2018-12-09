@@ -1,0 +1,184 @@
+EVA3_8_TRIGGERS2	
+
+********* WORKBENCH *************
+
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `ventas_AFTER_INSERT` AFTER INSERT ON `ventas` FOR EACH ROW 
+BEGIN
+	declare gana double;
+    
+set gana = new.total_venta - new.precio_neto;
+	
+insert into ganancias
+    
+values(new.id, gana);
+    
+END
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `ventas_AFTER_UPDATE` AFTER UPDATE ON `ventas` FOR EACH ROW 
+BEGIN
+	
+declare gana double;	
+   
+set gana = new.total_venta - new.precio_neto;
+    
+update ganancias
+    
+set ganacias = gana 
+    
+where id_ventas = old.id;
+
+
+END
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `ventas_AFTER_DELETE` AFTER DELETE ON `ventas` FOR EACH ROW
+BEGIN
+	
+DELETE from ganancias	
+ 
+where id_ventas = old.id;
+
+END
+
+
+
+*************SHELL**********************
+MySQL Shell 8.0.12
+
+Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type '\help' or '\?' for help; '\quit' to exit.
+
+
+ MySQL  JS > \sql
+Switching to SQL mode... Commands end with ;
+
+ MySQL  SQL > \connect -c root@localhost
+The -c option is deprecated, please use --mysql or -mc instead
+Creating a Classic session to 'root@localhost'
+Please provide the password for 'root@localhost': ****
+Save password for 'root@localhost:3306'? [Y]es/[N]o/Ne[v]er (default No): y
+Fetching schema names for autocompletion... Press ^C to stop.
+Your MySQL connection id is 15
+Server version: 8.0.12 MySQL Community Server - GPL
+No default schema selected; type \use <schema> to set one.
+
+ MySQL  localhost:3306 ssl  SQL > \use evaluacion_3
+Default schema set to `evaluacion_3`.
+Fetching table and column names from `evaluacion_3` for auto-completion... Press ^C to stop.
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > create table ventas(
+                                            ... id int primary key not null auto_increment,
+                                            ... total_venta double,
+                                            ... precio_neto double);
+Query OK, 0 rows affected (1.3710 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > show tables;
++------------------------+
+| Tables_in_evaluacion_3 |
++------------------------+
+| empleados              |
+| salarios               |
+| temp                   |
+| ventas                 |
++------------------------+
+4 rows in set (0.0199 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > desc ventas;
++-------------+---------+------+-----+---------+----------------+
+| Field       | Type    | Null | Key | Default | Extra          |
++-------------+---------+------+-----+---------+----------------+
+| id          | int(11) | NO   | PRI | NULL    | auto_increment |
+| total_venta | double  | YES  |     | NULL    |                |
+| precio_neto | double  | YES  |     | NULL    |                |
++-------------+---------+------+-----+---------+----------------+
+3 rows in set (0.0643 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > insert into ventas(total_venta,precio_neto) values(10000,5000);
+Query OK, 1 row affected (0.2881 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > select * from ventas;
++----+-------------+-------------+
+| id | total_venta | precio_neto |
++----+-------------+-------------+
+|  1 |       10000 |        5000 |
++----+-------------+-------------+
+1 row in set (0.0021 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > create table ganancias(
+                                            ... id_ventas int primary key auto_increment,
+                                            ... ganacias double);
+Query OK, 0 rows affected (1.5750 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > desc ganancias;
++-----------+---------+------+-----+---------+----------------+
+| Field     | Type    | Null | Key | Default | Extra          |
++-----------+---------+------+-----+---------+----------------+
+| id_ventas | int(11) | NO   | PRI | NULL    | auto_increment |
+| ganacias  | double  | YES  |     | NULL    |                |
++-----------+---------+------+-----+---------+----------------+
+2 rows in set (0.0333 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > insert into ventas(total_venta,precio_neto) values(10000,5000);
+ERROR: 1146 (42S02): Table 'evaluacion_3.ganacias' doesn't exist
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > insert into ventas(total_venta,precio_neto) values(10000,5000);
+Query OK, 1 row affected (0.1468 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > select * from ganancias;
++-----------+----------+
+| id_ventas | ganacias |
++-----------+----------+
+|         3 |     5000 |
++-----------+----------+
+1 row in set (0.0039 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > update ventas set total_ventas=700
+                                            ... where id_ventas =2;
+ERROR: 1054 (42S22): Unknown column 'id_ventas' in 'where clause'
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > update ventas set total_venta=700 where id_ventas =2;
+ERROR: 1054 (42S22): Unknown column 'id_ventas' in 'where clause'
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > update ventas set total_venta=700 where id =2;
+Query OK, 0 rows affected (0.0430 sec)
+
+Rows matched: 0  Changed: 0  Warnings: 0
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > select * ventas;
+ERROR: 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'ventas' at line 1
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > select * from ventas;
++----+-------------+-------------+
+| id | total_venta | precio_neto |
++----+-------------+-------------+
+|  1 |       10000 |        5000 |
+|  3 |       10000 |        5000 |
++----+-------------+-------------+
+2 rows in set (0.0022 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > update ventas set total_venta=700 where id =3;
+Query OK, 1 row affected (0.2127 sec)
+
+Rows matched: 1  Changed: 1  Warnings: 0
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > select * from ventas;
++----+-------------+-------------+
+| id | total_venta | precio_neto |
++----+-------------+-------------+
+|  1 |       10000 |        5000 |
+|  3 |         700 |        5000 |
++----+-------------+-------------+
+2 rows in set (0.0023 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > delete from ventas where id = 3;
+Query OK, 1 row affected (0.2464 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > select * from ganancias;
+Empty set (0.0023 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL >

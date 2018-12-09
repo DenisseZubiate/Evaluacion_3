@@ -1,0 +1,665 @@
+EVA3_2_FUNCIONES
+
+----------------------------------------------------------------------------------------
+********************WORKBENCH*******************
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `sumatoria`(num int)
+BEGIN
+
+declare sumatoria int;
+
+set sumatoria =0;
+
+
+suma_loop: loop
+
+if num > 0 then
+
+set sumatoria = sumatoria + num;
+
+set num = num -1;
+
+iterate suma_loop;
+
+end if;
+
+leave suma_loop;
+
+end loop suma_loop;
+
+
+RETURN sumatoria;
+
+END
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `cuenta_ordenes`(customer_id varchar(5)) 
+RETURNS int(11)
+
+BEGIN
+
+declare cont int;
+
+select count(*) into cont
+
+from orders
+
+where customerid =customer_id;
+
+RETURN cont;
+
+END
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `total_orders`(customer_id varchar(5)) RETURNS int(11)
+
+BEGIN
+
+declare total int;
+
+select sum(b.unitprice * b.quantity) into total 
+
+from orderdetails b 
+
+inner join orders a on a.orderid = b.orderid
+ 
+
+where a.customerid = customer_id
+
+group by customer_id;
+
+
+RETURN total;
+
+END
+
+MySQL Shell 8.0.12
+
+Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type '\help' or '\?' for help; '\quit' to exit.
+
+
+ MySQL  JS > \sql
+Switching to SQL mode... Commands end with ;
+
+ MySQL  SQL > \connect -c root@localhost
+The -c option is deprecated, please use --mysql or -mc instead
+Creating a Classic session to 'root@localhost'
+Please provide the password for 'root@localhost': ****
+Save password for 'root@localhost:3306'? [Y]es/[N]o/Ne[v]er (default No): y
+Fetching schema names for autocompletion... Press ^C to stop.
+Your MySQL connection id is 99
+Server version: 8.0.12 MySQL Community Server - GPL
+No default schema selected; type \use <schema> to set one.
+
+ MySQL  localhost:3306 ssl  SQL > \use evaluacion_
+MySQL Error 1049 (42000): ClassicSession.runSql: Unknown database 'evaluacion_'
+
+ MySQL  localhost:3306 ssl  SQL > create table temp(
+                              ... nombre varchar(5));
+ERROR: 1046 (3D000): No database selected
+
+ MySQL  localhost:3306 ssl  SQL > \use evaluacion_3
+Default schema set to `evaluacion_3`.
+Fetching table and column names from `evaluacion_3` for auto-completion... Press ^C to stop.
+
+ MySQL  localhost:3306 ssl  northwind  SQL > \use evaluacion_3
+Default schema set to `evaluacion_3`.
+Fetching table and column names from `evaluacion_3` for auto-completion... Press ^C to stop.
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > select sumatoria(5);
++--------------+
+| sumatoria(5) |
++--------------+
+|           15 |
++--------------+
+1 row in set (0.0030 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > select sumatoria(100);
++----------------+
+| sumatoria(100) |
++----------------+
+|           5050 |
++----------------+
+1 row in set (0.0043 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > create table temp( nombre varchar(5));
+Query OK, 0 rows affected (4.8922 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > inser into temp values ('A'), ('B'), ('C');
+ERROR: 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'inser into temp values ('A'), ('B'), ('C')' at line 1
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > insert into temp values ('A'), ('B'), ('C');
+Query OK, 3 rows affected (0.3868 sec)
+
+Records: 3  Duplicates: 0  Warnings: 0
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > \use northwind
+Default schema set to `northwind`.
+Fetching table and column names from `northwind` for auto-completion... Press ^C to stop.
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select count(*) from orders where customerid = 'ANATR';
++----------+
+| count(*) |
++----------+
+|        4 |
++----------+
+1 row in set (0.0980 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select sumatoria(5);
+ERROR: 1305 (42000): FUNCTION northwind.sumatoria does not exist
+
+ MySQL  localhost:3306 ssl  northwind  SQL > desc customers;
++--------------+-------------+------+-----+---------+-------+
+| Field        | Type        | Null | Key | Default | Extra |
++--------------+-------------+------+-----+---------+-------+
+| CustomerID   | varchar(5)  | NO   | PRI | NULL    |       |
+| CompanyName  | varchar(40) | NO   | MUL | NULL    |       |
+| ContactName  | varchar(30) | YES  |     | NULL    |       |
+| ContactTitle | varchar(30) | YES  |     | NULL    |       |
+| Address      | varchar(60) | YES  |     | NULL    |       |
+| City         | varchar(15) | YES  | MUL | NULL    |       |
+| Region       | varchar(15) | YES  | MUL | NULL    |       |
+| PostalCode   | varchar(10) | YES  | MUL | NULL    |       |
+| Country      | varchar(15) | YES  |     | NULL    |       |
+| Phone        | varchar(24) | YES  |     | NULL    |       |
+| Fax          | varchar(24) | YES  |     | NULL    |       |
++--------------+-------------+------+-----+---------+-------+
+11 rows in set (0.0086 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select customerid, companyname, sumatoria(5) as ejemplo
+                                         ... from customers;
++------------+--------------------------------------+---------+
+| customerid | companyname                          | ejemplo |
++------------+--------------------------------------+---------+
+| ALFKI      | Alfreds Futterkiste                  |      15 |
+| ANATR      | Ana Trujillo Emparedados y helados   |      15 |
+| ANTON      | Antonio Moreno Taquera               |      15 |
+| AROUT      | Around the Horn                      |      15 |
+| BSBEV      | B's Beverages                        |      15 |
+| BERGS      | Berglunds snabbkp                    |      15 |
+| BLAUS      | Blauer See Delikatessen              |      15 |
+| BOLID      | Blido Comidas preparadas             |      15 |
+| BLONP      | Blondesddsl pre et fils              |      15 |
+| BONAP      | Bon app'                             |      15 |
+| BOTTM      | Bottom-Dollar Markets                |      15 |
+| CACTU      | Cactus Comidas para llevar           |      15 |
+| CENTC      | Centro comercial Moctezuma           |      15 |
+| CHOPS      | Chop-suey Chinese                    |      15 |
+| COMMI      | Comrcio Mineiro                      |      15 |
+| CONSH      | Consolidated Holdings                |      15 |
+| WANDK      | Die Wandernde Kuh                    |      15 |
+| DRACD      | Drachenblut Delikatessen             |      15 |
+| DUMON      | Du monde entier                      |      15 |
+| EASTC      | Eastern Connection                   |      15 |
+| ERNSH      | Ernst Handel                         |      15 |
+| FAMIA      | Familia Arquibaldo                   |      15 |
+| FISSA      | FISSA Fabrica Inter. Salchichas S.A. |      15 |
+| FOLIG      | Folies gourmandes                    |      15 |
+| FOLKO      | Folk och f HB                        |      15 |
+| FRANR      | France restauration                  |      15 |
+| FRANS      | Franchi S.p.A.                       |      15 |
+| FRANK      | Frankenversand                       |      15 |
+| FURIB      | Furia Bacalhau e Frutos do Mar       |      15 |
+| GALED      | Galera del gastrnomo                 |      15 |
+| GODOS      | Godos Cocina Tpica                   |      15 |
+| GOURL      | Gourmet Lanchonetes                  |      15 |
+| GREAL      | Great Lakes Food Market              |      15 |
+| GROSR      | GROSELLA-Restaurante                 |      15 |
+| HANAR      | Hanari Carnes                        |      15 |
+| HILAA      | HILARION-Abastos                     |      15 |
+| HUNGC      | Hungry Coyote Import Store           |      15 |
+| HUNGO      | Hungry Owl All-Night Grocers         |      15 |
+| ISLAT      | Island Trading                       |      15 |
+| Val2       | IT                                   |      15 |
+| VALON      | IT                                   |      15 |
+| KOENE      | Kniglich Essen                       |      15 |
+| LACOR      | La corne d'abondance                 |      15 |
+| LAMAI      | La maison d'Asie                     |      15 |
+| LAUGB      | Laughing Bacchus Wine Cellars        |      15 |
+| LAZYK      | Lazy K Kountry Store                 |      15 |
+| LEHMS      | Lehmanns Marktstand                  |      15 |
+| LETSS      | Let's Stop N Shop                    |      15 |
+| LILAS      | LILA-Supermercado                    |      15 |
+| LINOD      | LINO-Delicateses                     |      15 |
+| LONEP      | Lonesome Pine Restaurant             |      15 |
+| MAGAA      | Magazzini Alimentari Riuniti         |      15 |
+| MAISD      | Maison Dewey                         |      15 |
+| MORGK      | Morgenstern Gesundkost               |      15 |
+| MEREP      | Mre Paillarde                        |      15 |
+| NORTS      | North/South                          |      15 |
+| OCEAN      | Ocano Atlntico Ltda.                 |      15 |
+| OLDWO      | Old World Delicatessen               |      15 |
+| OTTIK      | Ottilies Kseladen                    |      15 |
+| PARIS      | Paris spcialits                      |      15 |
+| PERIC      | Pericles Comidas clsicas             |      15 |
+| PICCO      | Piccolo und mehr                     |      15 |
+| PRINI      | Princesa Isabel Vinhos               |      15 |
+| QUEDE      | Que Delcia                           |      15 |
+| QUEEN      | Queen Cozinha                        |      15 |
+| QUICK      | QUICK-Stop                           |      15 |
+| RANCH      | Rancho grande                        |      15 |
+| RATTC      | Rattlesnake Canyon Grocery           |      15 |
+| REGGC      | Reggiani Caseifici                   |      15 |
+| RICAR      | Ricardo Adocicados                   |      15 |
+| RICSU      | Richter Supermarkt                   |      15 |
+| ROMEY      | Romero y tomillo                     |      15 |
+| SANTG      | Sant Gourmet                         |      15 |
+| SAVEA      | Save-a-lot Markets                   |      15 |
+| SEVES      | Seven Seas Imports                   |      15 |
+| SIMOB      | Simons bistro                        |      15 |
+| SPECD      | Spcialits du monde                   |      15 |
+| SPLIR      | Split Rail Beer & Ale                |      15 |
+| SUPRD      | Suprmes dlices                       |      15 |
+| THEBI      | The Big Cheese                       |      15 |
+| THECR      | The Cracker Box                      |      15 |
+| TOMSP      | Toms Spezialitten                    |      15 |
+| TORTU      | Tortuga Restaurante                  |      15 |
+| TRADH      | Tradio Hipermercados                 |      15 |
+| TRAIH      | Trail's Head Gourmet Provisioners    |      15 |
+| VAFFE      | Vaffeljernet                         |      15 |
+| VICTE      | Victuailles en stock                 |      15 |
+| VINET      | Vins et alcools Chevalier            |      15 |
+| WARTH      | Wartian Herkku                       |      15 |
+| WELLI      | Wellington Importadora               |      15 |
+| WHITC      | White Clover Markets                 |      15 |
+| WILMK      | Wilman Kala                          |      15 |
+| WOLZA      | Wolski  Zajazd                       |      15 |
++------------+--------------------------------------+---------+
+93 rows in set (0.1281 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL >
+Save password for 'root@localhost:3306'? [Y]es/[N]o/Ne[v]er (default No): y
+Fetching schema names for autocompletion... Press ^C to stop.
+Your MySQL connection id is 99
+Server version: 8.0.12 MySQL Community Server - GPL
+No default schema selected; type \use <schema> to set one.
+
+ MySQL  localhost:3306 ssl  SQL > \use evaluacion_
+MySQL Error 1049 (42000): ClassicSession.runSql: Unknown database 'evaluacion_'
+
+ MySQL  localhost:3306 ssl  SQL > create table temp(
+                              ... nombre varchar(5));
+ERROR: 1046 (3D000): No database selected
+
+ MySQL  localhost:3306 ssl  SQL > \use evaluacion_3
+Default schema set to `evaluacion_3`.
+Fetching table and column names from `evaluacion_3` for auto-completion... Press ^C to stop.
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > create table temp( nombre varchar(5));
+Query OK, 0 rows affected (4.8922 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > inser into temp values ('A'), ('B'), ('C');
+ERROR: 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'inser into temp values ('A'), ('B'), ('C')' at line 1
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > insert into temp values ('A'), ('B'), ('C');
+Query OK, 3 rows affected (0.3868 sec)
+
+Records: 3  Duplicates: 0  Warnings: 0
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > \use northwind
+Default schema set to `northwind`.
+Fetching table and column names from `northwind` for auto-completion... Press ^C to stop.
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select count(*) from orders where customerid = 'ANATR';
++----------+
+| count(*) |
++----------+
+|        4 |
++----------+
+1 row in set (0.0980 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select sumatoria(5);
+ERROR: 1305 (42000): FUNCTION northwind.sumatoria does not exist
+
+ MySQL  localhost:3306 ssl  northwind  SQL > desc customers;
++--------------+-------------+------+-----+---------+-------+
+| Field        | Type        | Null | Key | Default | Extra |
++--------------+-------------+------+-----+---------+-------+
+| CustomerID   | varchar(5)  | NO   | PRI | NULL    |       |
+| CompanyName  | varchar(40) | NO   | MUL | NULL    |       |
+| ContactName  | varchar(30) | YES  |     | NULL    |       |
+| ContactTitle | varchar(30) | YES  |     | NULL    |       |
+| Address      | varchar(60) | YES  |     | NULL    |       |
+| City         | varchar(15) | YES  | MUL | NULL    |       |
+| Region       | varchar(15) | YES  | MUL | NULL    |       |
+| PostalCode   | varchar(10) | YES  | MUL | NULL    |       |
+| Country      | varchar(15) | YES  |     | NULL    |       |
+| Phone        | varchar(24) | YES  |     | NULL    |       |
+| Fax          | varchar(24) | YES  |     | NULL    |       |
++--------------+-------------+------+-----+---------+-------+
+11 rows in set (0.0086 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select customerid, companyname, sumatoria(5) as ejemplo
+                                         ... from customers;
++------------+--------------------------------------+---------+
+| customerid | companyname                          | ejemplo |
++------------+--------------------------------------+---------+
+| ALFKI      | Alfreds Futterkiste                  |      15 |
+| ANATR      | Ana Trujillo Emparedados y helados   |      15 |
+| ANTON      | Antonio Moreno Taquera               |      15 |
+| AROUT      | Around the Horn                      |      15 |
+| BSBEV      | B's Beverages                        |      15 |
+| BERGS      | Berglunds snabbkp                    |      15 |
+| BLAUS      | Blauer See Delikatessen              |      15 |
+| BOLID      | Blido Comidas preparadas             |      15 |
+| BLONP      | Blondesddsl pre et fils              |      15 |
+| BONAP      | Bon app'                             |      15 |
+| BOTTM      | Bottom-Dollar Markets                |      15 |
+| CACTU      | Cactus Comidas para llevar           |      15 |
+| CENTC      | Centro comercial Moctezuma           |      15 |
+| CHOPS      | Chop-suey Chinese                    |      15 |
+| COMMI      | Comrcio Mineiro                      |      15 |
+| CONSH      | Consolidated Holdings                |      15 |
+| WANDK      | Die Wandernde Kuh                    |      15 |
+| DRACD      | Drachenblut Delikatessen             |      15 |
+| DUMON      | Du monde entier                      |      15 |
+| EASTC      | Eastern Connection                   |      15 |
+| ERNSH      | Ernst Handel                         |      15 |
+| FAMIA      | Familia Arquibaldo                   |      15 |
+| FISSA      | FISSA Fabrica Inter. Salchichas S.A. |      15 |
+| FOLIG      | Folies gourmandes                    |      15 |
+| FOLKO      | Folk och f HB                        |      15 |
+| FRANR      | France restauration                  |      15 |
+| FRANS      | Franchi S.p.A.                       |      15 |
+| FRANK      | Frankenversand                       |      15 |
+| FURIB      | Furia Bacalhau e Frutos do Mar       |      15 |
+| GALED      | Galera del gastrnomo                 |      15 |
+| GODOS      | Godos Cocina Tpica                   |      15 |
+| GOURL      | Gourmet Lanchonetes                  |      15 |
+| GREAL      | Great Lakes Food Market              |      15 |
+| GROSR      | GROSELLA-Restaurante                 |      15 |
+| HANAR      | Hanari Carnes                        |      15 |
+| HILAA      | HILARION-Abastos                     |      15 |
+| HUNGC      | Hungry Coyote Import Store           |      15 |
+| HUNGO      | Hungry Owl All-Night Grocers         |      15 |
+| ISLAT      | Island Trading                       |      15 |
+| Val2       | IT                                   |      15 |
+| VALON      | IT                                   |      15 |
+| KOENE      | Kniglich Essen                       |      15 |
+| LACOR      | La corne d'abondance                 |      15 |
+| LAMAI      | La maison d'Asie                     |      15 |
+| LAUGB      | Laughing Bacchus Wine Cellars        |      15 |
+| LAZYK      | Lazy K Kountry Store                 |      15 |
+| LEHMS      | Lehmanns Marktstand                  |      15 |
+| LETSS      | Let's Stop N Shop                    |      15 |
+| LILAS      | LILA-Supermercado                    |      15 |
+| LINOD      | LINO-Delicateses                     |      15 |
+| LONEP      | Lonesome Pine Restaurant             |      15 |
+| MAGAA      | Magazzini Alimentari Riuniti         |      15 |
+| MAISD      | Maison Dewey                         |      15 |
+| MORGK      | Morgenstern Gesundkost               |      15 |
+| MEREP      | Mre Paillarde                        |      15 |
+| NORTS      | North/South                          |      15 |
+| OCEAN      | Ocano Atlntico Ltda.                 |      15 |
+| OLDWO      | Old World Delicatessen               |      15 |
+| OTTIK      | Ottilies Kseladen                    |      15 |
+| PARIS      | Paris spcialits                      |      15 |
+| PERIC      | Pericles Comidas clsicas             |      15 |
+| PICCO      | Piccolo und mehr                     |      15 |
+| PRINI      | Princesa Isabel Vinhos               |      15 |
+| QUEDE      | Que Delcia                           |      15 |
+| QUEEN      | Queen Cozinha                        |      15 |
+| QUICK      | QUICK-Stop                           |      15 |
+| RANCH      | Rancho grande                        |      15 |
+| RATTC      | Rattlesnake Canyon Grocery           |      15 |
+| REGGC      | Reggiani Caseifici                   |      15 |
+| RICAR      | Ricardo Adocicados                   |      15 |
+| RICSU      | Richter Supermarkt                   |      15 |
+| ROMEY      | Romero y tomillo                     |      15 |
+| SANTG      | Sant Gourmet                         |      15 |
+| SAVEA      | Save-a-lot Markets                   |      15 |
+| SEVES      | Seven Seas Imports                   |      15 |
+| SIMOB      | Simons bistro                        |      15 |
+| SPECD      | Spcialits du monde                   |      15 |
+| SPLIR      | Split Rail Beer & Ale                |      15 |
+| SUPRD      | Suprmes dlices                       |      15 |
+| THEBI      | The Big Cheese                       |      15 |
+| THECR      | The Cracker Box                      |      15 |
+| TOMSP      | Toms Spezialitten                    |      15 |
+| TORTU      | Tortuga Restaurante                  |      15 |
+| TRADH      | Tradio Hipermercados                 |      15 |
+| TRAIH      | Trail's Head Gourmet Provisioners    |      15 |
+| VAFFE      | Vaffeljernet                         |      15 |
+| VICTE      | Victuailles en stock                 |      15 |
+| VINET      | Vins et alcools Chevalier            |      15 |
+| WARTH      | Wartian Herkku                       |      15 |
+| WELLI      | Wellington Importadora               |      15 |
+| WHITC      | White Clover Markets                 |      15 |
+| WILMK      | Wilman Kala                          |      15 |
+| WOLZA      | Wolski  Zajazd                       |      15 |
++------------+--------------------------------------+---------+
+93 rows in set (0.1281 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select cuenta_ordenes(AnaTR);
+ERROR: 1054 (42S22): Unknown column 'AnaTR' in 'field list'
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select cuenta_ordenes('AnaTR');
++-------------------------+
+| cuenta_ordenes('AnaTR') |
++-------------------------+
+|                     830 |
++-------------------------+
+1 row in set (0.0727 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select cuenta_ordenes('AnaTR');
+ERROR: 1054 (42S22): ClassicResult.fetchOne: Unknown column 'customer_id' in 'where clause'
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select cuenta_ordenes('AnaTR');
++-------------------------+
+| cuenta_ordenes('AnaTR') |
++-------------------------+
+|                       4 |
++-------------------------+
+1 row in set (0.0211 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select cuenta_ordenes('WELLI');
++-------------------------+
+| cuenta_ordenes('WELLI') |
++-------------------------+
+|                       9 |
++-------------------------+
+1 row in set (0.0302 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select customerid, companyname, cuenta_ordenes(customerid) from customers;
++------------+--------------------------------------+----------------------------+
+| customerid | companyname                          | cuenta_ordenes(customerid) |
++------------+--------------------------------------+----------------------------+
+| ALFKI      | Alfreds Futterkiste                  |                          6 |
+| ANATR      | Ana Trujillo Emparedados y helados   |                          4 |
+| ANTON      | Antonio Moreno Taquera               |                          7 |
+| AROUT      | Around the Horn                      |                         13 |
+| BSBEV      | B's Beverages                        |                         10 |
+| BERGS      | Berglunds snabbkp                    |                         18 |
+| BLAUS      | Blauer See Delikatessen              |                          7 |
+| BOLID      | Blido Comidas preparadas             |                          3 |
+| BLONP      | Blondesddsl pre et fils              |                         11 |
+| BONAP      | Bon app'                             |                         17 |
+| BOTTM      | Bottom-Dollar Markets                |                         14 |
+| CACTU      | Cactus Comidas para llevar           |                          6 |
+| CENTC      | Centro comercial Moctezuma           |                          1 |
+| CHOPS      | Chop-suey Chinese                    |                          8 |
+| COMMI      | Comrcio Mineiro                      |                          5 |
+| CONSH      | Consolidated Holdings                |                          3 |
+| WANDK      | Die Wandernde Kuh                    |                         10 |
+| DRACD      | Drachenblut Delikatessen             |                          6 |
+| DUMON      | Du monde entier                      |                          4 |
+| EASTC      | Eastern Connection                   |                          8 |
+| ERNSH      | Ernst Handel                         |                         30 |
+| FAMIA      | Familia Arquibaldo                   |                          7 |
+| FISSA      | FISSA Fabrica Inter. Salchichas S.A. |                          0 |
+| FOLIG      | Folies gourmandes                    |                          5 |
+| FOLKO      | Folk och f HB                        |                         19 |
+| FRANR      | France restauration                  |                          3 |
+| FRANS      | Franchi S.p.A.                       |                          6 |
+| FRANK      | Frankenversand                       |                         15 |
+| FURIB      | Furia Bacalhau e Frutos do Mar       |                          8 |
+| GALED      | Galera del gastrnomo                 |                          5 |
+| GODOS      | Godos Cocina Tpica                   |                         10 |
+| GOURL      | Gourmet Lanchonetes                  |                          9 |
+| GREAL      | Great Lakes Food Market              |                         11 |
+| GROSR      | GROSELLA-Restaurante                 |                          2 |
+| HANAR      | Hanari Carnes                        |                         14 |
+| HILAA      | HILARION-Abastos                     |                         18 |
+| HUNGC      | Hungry Coyote Import Store           |                          5 |
+| HUNGO      | Hungry Owl All-Night Grocers         |                         19 |
+| ISLAT      | Island Trading                       |                         10 |
+| Val2       | IT                                   |                          0 |
+| VALON      | IT                                   |                          0 |
+| KOENE      | Kniglich Essen                       |                         14 |
+| LACOR      | La corne d'abondance                 |                          4 |
+| LAMAI      | La maison d'Asie                     |                         14 |
+| LAUGB      | Laughing Bacchus Wine Cellars        |                          3 |
+| LAZYK      | Lazy K Kountry Store                 |                          2 |
+| LEHMS      | Lehmanns Marktstand                  |                         15 |
+| LETSS      | Let's Stop N Shop                    |                          4 |
+| LILAS      | LILA-Supermercado                    |                         14 |
+| LINOD      | LINO-Delicateses                     |                         12 |
+| LONEP      | Lonesome Pine Restaurant             |                          8 |
+| MAGAA      | Magazzini Alimentari Riuniti         |                          9 |
+| MAISD      | Maison Dewey                         |                          7 |
+| MORGK      | Morgenstern Gesundkost               |                          5 |
+| MEREP      | Mre Paillarde                        |                         13 |
+| NORTS      | North/South                          |                          3 |
+| OCEAN      | Ocano Atlntico Ltda.                 |                          5 |
+| OLDWO      | Old World Delicatessen               |                         10 |
+| OTTIK      | Ottilies Kseladen                    |                         10 |
+| PARIS      | Paris spcialits                      |                          0 |
+| PERIC      | Pericles Comidas clsicas             |                          6 |
+| PICCO      | Piccolo und mehr                     |                         10 |
+| PRINI      | Princesa Isabel Vinhos               |                          5 |
+| QUEDE      | Que Delcia                           |                          9 |
+| QUEEN      | Queen Cozinha                        |                         13 |
+| QUICK      | QUICK-Stop                           |                         28 |
+| RANCH      | Rancho grande                        |                          5 |
+| RATTC      | Rattlesnake Canyon Grocery           |                         18 |
+| REGGC      | Reggiani Caseifici                   |                         12 |
+| RICAR      | Ricardo Adocicados                   |                         11 |
+| RICSU      | Richter Supermarkt                   |                         10 |
+| ROMEY      | Romero y tomillo                     |                          5 |
+| SANTG      | Sant Gourmet                         |                          6 |
+| SAVEA      | Save-a-lot Markets                   |                         31 |
+| SEVES      | Seven Seas Imports                   |                          9 |
+| SIMOB      | Simons bistro                        |                          7 |
+| SPECD      | Spcialits du monde                   |                          4 |
+| SPLIR      | Split Rail Beer & Ale                |                          9 |
+| SUPRD      | Suprmes dlices                       |                         12 |
+| THEBI      | The Big Cheese                       |                          4 |
+| THECR      | The Cracker Box                      |                          3 |
+| TOMSP      | Toms Spezialitten                    |                          6 |
+| TORTU      | Tortuga Restaurante                  |                         10 |
+| TRADH      | Tradio Hipermercados                 |                          6 |
+| TRAIH      | Trail's Head Gourmet Provisioners    |                          3 |
+| VAFFE      | Vaffeljernet                         |                         11 |
+| VICTE      | Victuailles en stock                 |                         10 |
+| VINET      | Vins et alcools Chevalier            |                          5 |
+| WARTH      | Wartian Herkku                       |                         14 |
+| WELLI      | Wellington Importadora               |                          9 |
+| WHITC      | White Clover Markets                 |                         14 |
+| WILMK      | Wilman Kala                          |                          7 |
+| WOLZA      | Wolski  Zajazd                       |                          7 |
++------------+--------------------------------------+----------------------------+
+93 rows in set (0.1669 sec)
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select customerid, companyname, total_orders(customerid) as total from customers;
++------------+--------------------------------------+--------------------------+
+| customerid | companyname                          | total                    |
++------------+--------------------------------------+--------------------------+
+| ALFKI      | Alfreds Futterkiste                  |                     4596 |
+| ANATR      | Ana Trujillo Emparedados y helados   |                     1403 |
+| ANTON      | Antonio Moreno Taquera               |                     7515 |
+| AROUT      | Around the Horn                      |                    13807 |
+| BSBEV      | B's Beverages                        |                     6090 |
+| BERGS      | Berglunds snabbkp                    |                    26968 |
+| BLAUS      | Blauer See Delikatessen              |                     3240 |
+| BOLID      | Blido Comidas preparadas             |                     5298 |
+| BLONP      | Blondesddsl pre et fils              |                    19088 |
+| BONAP      | Bon app'                             |                    23851 |
+| BOTTM      | Bottom-Dollar Markets                |                    22608 |
+| CACTU      | Cactus Comidas para llevar           |                     1815 |
+| CENTC      | Centro comercial Moctezuma           |                      101 |
+| CHOPS      | Chop-suey Chinese                    |                    12886 |
+| COMMI      | Comrcio Mineiro                      |                     3811 |
+| CONSH      | Consolidated Holdings                |                     1719 |
+| WANDK      | Die Wandernde Kuh                    |                    10654 |
+| DRACD      | Drachenblut Delikatessen             |                     3763 |
+| DUMON      | Du monde entier                      |                     1616 |
+| EASTC      | Eastern Connection                   |                    15034 |
+| ERNSH      | Ernst Handel                         |                   113237 |
+| FAMIA      | Familia Arquibaldo                   |                     4439 |
+| FISSA      | FISSA Fabrica Inter. Salchichas S.A. |                     NULL |
+| FOLIG      | Folies gourmandes                    |                    11667 |
+| FOLKO      | Folk och f HB                        |                    32556 |
+| FRANR      | France restauration                  |                     3172 |
+| FRANS      | Franchi S.p.A.                       |                     1546 |
+| FRANK      | Frankenversand                       |                    28723 |
+| FURIB      | Furia Bacalhau e Frutos do Mar       |                     7152 |
+| GALED      | Galera del gastrnomo                 |                      837 |
+| GODOS      | Godos Cocina Tpica                   |                    11830 |
+| GOURL      | Gourmet Lanchonetes                  |                     8702 |
+| GREAL      | Great Lakes Food Market              |                    19711 |
+| GROSR      | GROSELLA-Restaurante                 |                     1489 |
+| HANAR      | Hanari Carnes                        |                    34101 |
+| HILAA      | HILARION-Abastos                     |                    23612 |
+| HUNGC      | Hungry Coyote Import Store           |                     3063 |
+| HUNGO      | Hungry Owl All-Night Grocers         |                    57317 |
+| ISLAT      | Island Trading                       |                     6146 |
+| Val2       | IT                                   |                     NULL |
+| VALON      | IT                                   |                     NULL |
+| KOENE      | Kniglich Essen                       |                    31746 |
+| LACOR      | La corne d'abondance                 |                     1992 |
+| LAMAI      | La maison d'Asie                     |                    10272 |
+| LAUGB      | Laughing Bacchus Wine Cellars        |                      523 |
+| LAZYK      | Lazy K Kountry Store                 |                      357 |
+| LEHMS      | Lehmanns Marktstand                  |                    21282 |
+| LETSS      | Let's Stop N Shop                    |                     3490 |
+| LILAS      | LILA-Supermercado                    |                    17825 |
+| LINOD      | LINO-Delicateses                     |                    17890 |
+| LONEP      | Lonesome Pine Restaurant             |                     4259 |
+| MAGAA      | Magazzini Alimentari Riuniti         |                     6224 |
+| MAISD      | Maison Dewey                         |                    10431 |
+| MORGK      | Morgenstern Gesundkost               |                     5042 |
+| MEREP      | Mre Paillarde                        |                    32204 |
+| NORTS      | North/South                          |                      649 |
+| OCEAN      | Ocano Atlntico Ltda.                 |                     3460 |
+| OLDWO      | Old World Delicatessen               |                    16325 |
+| OTTIK      | Ottilies Kseladen                    |                    13158 |
+| PARIS      | Paris spcialits                      |                     NULL |
+| PERIC      | Pericles Comidas clsicas             |                     4242 |
+| PICCO      | Piccolo und mehr                     |                    26260 |
+| PRINI      | Princesa Isabel Vinhos               |                     5317 |
+| QUEDE      | Que Delcia                           |                     6974 |
+| QUEEN      | Queen Cozinha                        |                    30226 |
+| QUICK      | QUICK-Stop                           |                   117483 |
+| RANCH      | Rancho grande                        |                     2844 |
+| RATTC      | Rattlesnake Canyon Grocery           |                    52246 |
+| REGGC      | Reggiani Caseifici                   |                     7556 |
+| RICAR      | Ricardo Adocicados                   |                    12924 |
+| RICSU      | Richter Supermarkt                   |                    20033 |
+| ROMEY      | Romero y tomillo                     |                     1467 |
+| SANTG      | Sant Gourmet                         |                     5735 |
+| SAVEA      | Save-a-lot Markets                   |                   115673 |
+| SEVES      | Seven Seas Imports                   |                    17172 |
+| SIMOB      | Simons bistro                        |                    18138 |
+| SPECD      | Spcialits du monde                   |                     2423 |
+| SPLIR      | Split Rail Beer & Ale                |                    12490 |
+| SUPRD      | Suprmes dlices                       |                    24704 |
+| THEBI      | The Big Cheese                       |                     3361 |
+| THECR      | The Cracker Box                      |                     1947 |
+| TOMSP      | Toms Spezialitten                    |                     4954 |
+| TORTU      | Tortuga Restaurante                  |                    10812 |
+| TRADH      | Tradio Hipermercados                 |                     7311 |
+| TRAIH      | Trail's Head Gourmet Provisioners    |                     1571 |
+| VAFFE      | Vaffeljernet                         |                    16644 |
+| VICTE      | Victuailles en stock                 |                     9937 |
+| VINET      | Vins et alcools Chevalier            |                     1480 |
+| WARTH      | Wartian Herkku                       |                    15988 |
+| WELLI      | Wellington Importadora               |                     6481 |
+| WHITC      | White Clover Markets                 |                    29073 |
+| WILMK      | Wilman Kala                          |                     3161 |
+| WOLZA      | Wolski  Zajazd                       |                     3532 |
++------------+--------------------------------------+--------------------------+
+93 rows in set (0.2779 sec)

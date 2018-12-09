@@ -1,0 +1,108 @@
+EVA3_1_FUNCIONES
+******************
+
+FUNCIONES - DEFINIDAS POR EL USUARIO
+SUM, AVG, MAX, MIN
+REGRESA VALORES PRIMITIVOS (INT, DOUBLES)
+
+NIVEL DEL SERVIDOR
+TRIGGERS 
+METODOS EZSPECIALES QUE SE EJECUTAN EN CIERTOS EVENTOS DE LAS TABLAS 
+INSERT , UPDATE, DELETE
+
+PROCEDIMIENTOS ALMACENADOS
+METODOS ALMACENADOS EN EL SERVIDOR 
+CONSULTAS
+
+---------------------------------------------------------------------------------------------------------------------------------------
+MySQL Shell 8.0.12
+
+Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type '\help' or '\?' for help; '\quit' to exit.
+
+
+ MySQL  JS > \sql
+Switching to SQL mode... Commands end with ;
+
+ MySQL  SQL > \connect -c root@localhost
+The -c option is deprecated, please use --mysql or -mc instead
+Creating a Classic session to 'root@localhost'
+Please provide the password for 'root@localhost': ****
+Save password for 'root@localhost:3306'? [Y]es/[N]o/Ne[v]er (default No): y
+Fetching schema names for autocompletion... Press ^C to stop.
+Your MySQL connection id is 93
+Server version: 8.0.12 MySQL Community Server - GPL
+No default schema selected; type \use <schema> to set one.
+
+ MySQL  localhost:3306 ssl  SQL > create database evaluacion_3;
+Query OK, 1 row affected (2.2983 sec)
+
+ MySQL  localhost:3306 ssl  SQL > \use evaluacion_3;
+MySQL Error 1049 (42000): ClassicSession.runSql: Unknown database 'evaluacion_3;'
+
+ MySQL  localhost:3306 ssl  SQL > \use evaluacion_3
+Default schema set to `evaluacion_3`.
+Fetching table and column names from `evaluacion_3` for auto-completion... Press ^C to stop.
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > \close
+                                            ... ;
+ERROR: 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '\close' at line 1
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > SET GLOBAL log_bin_trust_function_creators =1;
+Query OK, 0 rows affected (0.0010 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > \use evaluacion_3
+Default schema set to `evaluacion_3`.
+Fetching table and column names from `evaluacion_3` for auto-completion... Press ^C to stop.
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > select suma_numeros(5,9);
++-------------------+
+| suma_numeros(5,9) |
++-------------------+
+|                14 |
++-------------------+
+1 row in set (0.0489 sec)
+
+ MySQL  localhost:3306 ssl  evaluacion_3  SQL > \use northwind
+Default schema set to `northwind`.
+Fetching table and column names from `northwind` for auto-completion... Press ^C to stop.
+
+ MySQL  localhost:3306 ssl  northwind  SQL > select cuenta_clientes();
++-------------------+
+| cuenta_clientes() |
++-------------------+
+|                93 |
++-------------------+
+1 row in set (0.0387 sec)
+
+***************WORKBENCH**********************
+
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `cuenta_clientes`() 
+BEGIN
+ declare cont int;
+ 
+select count(*)  into cont from customers;
+RETURN cont;
+
+RETURNS cont;
+END
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `suma_numeros`(num1 int, num2 int)
+
+BEGIN
+ 
+declare  suma int;
+
+set suma= num1 + num2;
+
+RETURN suma;
+
+END
+
+
