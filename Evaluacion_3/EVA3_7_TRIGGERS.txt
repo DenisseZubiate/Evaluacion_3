@@ -4,9 +4,16 @@ EVA3_7_TRIGGERS
 -BEFORE INSERT
 CREATE DEFINER=`root`@`localhost` TRIGGER `empleados_BEFORE_INSERT` BEFORE INSERT ON `empleados` FOR EACH ROW
 BEGIN
-
-	set New.rfc = genera_rfc(new.nombre, new.apellido, new.apellido_mat, new.fecha);
-
+if new.salario < 10000 then
+   
+#UNA EXCEPCION
+    signal sqlstate '45000' 
+set message_text = 'PAGA MAS TACANO';
+    
+end if;
+    
+	
+set New.rfc = genera_rfc(new.nombre, new.apellido, new.apellido_mat, new.fecha);
 
 END
 
